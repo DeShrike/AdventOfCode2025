@@ -40,21 +40,10 @@ class Day3Solution(Aoc):
 
    def TestDataB(self):
       self.inputdata.clear()
-      # self.TestDataA()    # If test data is same as test data for part A
-      testdata = \
-      """
-      1000
-      2000
-      3000
-      """
-      self.inputdata = [line.strip() for line in testdata.strip().split("\n")]
-      return None
+      self.TestDataA()
+      return 3121910778619
 
    def ParseInput(self):
-      # rx = re.compile("^(?P<from>[A-Z0-9]{3}) = \((?P<left>[A-Z0-9]{3}), (?P<right>[A-Z0-9]{3})\)$")
-      # match = rx.search(line)
-      # pos = match["from"]
-
       data = []
       for line in self.inputdata:
          data.append(line)
