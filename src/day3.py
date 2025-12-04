@@ -50,6 +50,25 @@ class Day3Solution(Aoc):
 
       return data
 
+   def FindInRemaining(self, remaining: str, pos: int, leave: int) -> int:
+      p = pos
+      l = int(remaining[pos])
+      for i in range(p, len(remaining) - leave + 1):
+         if int(remaining[i]) > l:
+            l = int(remaining[i])
+            p = i
+      return p
+      
+   def FindLargestB(self, bank: str) -> int:
+      curr = ""
+      needed = 12
+      pos = -1
+      while len(curr) < 12:
+         pos = self.FindInRemaining(bank, pos + 1, 12 - len(curr))
+         curr = curr + bank[pos]
+
+      return int(curr)
+
    def PartA(self):
       self.StartPartA()
 
@@ -70,9 +89,10 @@ class Day3Solution(Aoc):
       self.StartPartB()
 
       data = self.ParseInput()
-      answer = None
+      answer = 0
 
-      # Add solution here
+      for bank in data:
+         answer += self.FindLargestB(bank)
 
       self.ShowAnswer(answer)
 
