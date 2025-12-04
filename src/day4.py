@@ -1,5 +1,6 @@
 from aoc import Aoc
 from utilities import dirange
+from canvas import Canvas
 import itertools
 import math
 import re
@@ -47,15 +48,8 @@ class Day4Solution(Aoc):
 
    def TestDataB(self):
       self.inputdata.clear()
-      # self.TestDataA()    # If test data is same as test data for part A
-      testdata = \
-      """
-      1000
-      2000
-      3000
-      """
-      self.inputdata = [line.strip() for line in testdata.strip().split("\n")]
-      return None
+      self.TestDataA()
+      return 43
 
    def ParseInput(self):
       data = []
@@ -72,22 +66,24 @@ class Day4Solution(Aoc):
             if 0 <= x + dx < width and 0 <= y + dy < height and not (dx == 0 and dy  == 0):
                yield (x + dx, y + dy)
 
+   def GetRemovalble(self, grid):
+      removable = []
+      for y, row in enumerate(grid):
+         for x, roll in enumerate(grid):
+            if grid[y][x] != '@':
+               continue
+            nn = [True for xx, yy in self.Neighbours(grid, x, y) if grid[yy][xx] == '@']
+            if len(nn) < 4:
+               removable.append((x, y))
+      return removable
+
    def PartA(self):
       self.StartPartA()
 
       data = self.ParseInput()
-      answer = 0
 
-      for y, row in enumerate(data):
-         for x, roll in enumerate(row):
-            if data[y][x] != '@':
-               continue
-            #print(x, y, end="")
-            nn = [True for xx, yy in self.Neighbours(data, x, y) if data[yy][xx] == '@']
-            #print(f"  => {len(nn)}")
-            #a = input()
-            if len(nn) < 4:
-               answer += 1
+      rem = self.GetRemovalble(data)
+      answer = len(rem)
 
       self.ShowAnswer(answer)
 
@@ -95,9 +91,36 @@ class Day4Solution(Aoc):
       self.StartPartB()
 
       data = self.ParseInput()
-      answer = None
+      answer = 0
 
-      # Add solution here
+      grid = [[r for r in row] for row in data]
+      while True:
+         rem = self.GetRemovalble(grid)
+         answer += len(rem)
+         for p in rem:
+            grid[p[1]][p[0]] = "."
+         if len(rem) == 0:
+            break
+
+      boxsize = 4
+      coloron = (0xFF, 0x00, 0x00)
+      coloroff = (0x18, 0x18, 0x18)
+
+      width = len(data[0])
+      height = len(data)
+      canvas = Canvas(width * boxsize, height * boxsize)
+      for y, row in enumerate(grid):
+         for x, roll in enumerate(grid):
+            xx = x * boxsize
+            yy = y * boxsize
+            if grid[y][x] != '@':
+               canvas.set_big_pixel(xx, yy, coloroff, boxsize)
+            else:
+               canvas.set_big_pixel(xx + 1, yy + 1, coloron, boxsize - 2)
+
+      pngname = "day4b.png"
+      print(f"Saving {pngname}")
+      canvas.save_PNG(pngname)
 
       self.ShowAnswer(answer)
 
