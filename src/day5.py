@@ -7,10 +7,15 @@ import sys
 # Day 5
 # https://adventofcode.com/2025
 
-class Day5Solution(Aoc):
+class Range():
+   def __init__(self, v: int, t: int) -> None:
+      self.v = v
+      self.t = t
 
+class Day5Solution(Aoc):
    def Run(self):
-      self.StartDay(5, "AOC")
+
+      self.StartDay(5, "Cafeteria")
       self.ReadInput()
       self.PartA()
       self.PartB()
@@ -47,21 +52,10 @@ class Day5Solution(Aoc):
 
    def TestDataB(self):
       self.inputdata.clear()
-      # self.TestDataA()    # If test data is same as test data for part A
-      testdata = \
-      """
-      1000
-      2000
-      3000
-      """
-      self.inputdata = [line.strip() for line in testdata.strip().split("\n")]
-      return None
+      self.TestDataA()
+      return 14
 
    def ParseInput(self):
-      # rx = re.compile("^(?P<from>[A-Z0-9]{3}) = \((?P<left>[A-Z0-9]{3}), (?P<right>[A-Z0-9]{3})\)$")
-      # match = rx.search(line)
-      # pos = match["from"]
-
       data = []
       for line in self.inputdata:
          data.append(line)
@@ -97,9 +91,33 @@ class Day5Solution(Aoc):
       self.StartPartB()
 
       data = self.ParseInput()
-      answer = None
+      answer = 0
 
-      # Add solution here
+      ranges = []
+      for l, lijn in enumerate(data):
+         if "-" in lijn:
+            parts = lijn.split("-")
+            ranges.append(( int(parts[0]), int(parts[1]) ))
+
+      rr = ranges.sort(key= lambda x: x[0])
+      ranges = [Range(r[0], r[1]) for r in ranges]
+
+      count = len(ranges)
+      for _ in range(100):
+         remaining = []
+         c = ranges[0]
+         for r in ranges[1:]:
+            if c.v <= r.v <= c.t:
+               if r.t > c.t:
+                  c.t = r.t
+            else:
+               remaining.append(r)
+         remaining.append(c)
+         ranges = remaining[:]
+         count = len(ranges)
+
+      for r in remaining:
+         answer += (r.t - r.v) + 1
 
       self.ShowAnswer(answer)
 
