@@ -75,8 +75,6 @@ class Day7Solution(Aoc):
          if "S" in line:
             beams.append((line.index("S"), ix + 1))
 
-      uni = 1
-
       while True:
          newbeams = []
          for beam in beams:
@@ -87,7 +85,6 @@ class Day7Solution(Aoc):
                newbeams.append((x, y + 1))
             elif data[y + 1][x] == "^":
                split = False
-               uni += 2
                if x >= 0 and (x - 1, y + 1) not in newbeams:
                   newbeams.append((x - 1, y + 1))
                   split = True
@@ -99,7 +96,6 @@ class Day7Solution(Aoc):
          if len(beams) == 0:
             break
 
-      print(uni)
       answer = splits
       self.ShowAnswer(answer)
 
@@ -115,25 +111,27 @@ class Day7Solution(Aoc):
          if "S" in line:
             beam = (line.index("S"), ix + 1)
 
-      def dropbeam(b, timelines: int) -> int:
-         #print("dropbeam", b, timelines)
+      mem = {}
+
+      def dropbeam(b, mm) -> int:
+         timelines = 0
+         if b in mm:
+            return mm[b]
          x, y = b
          while y < height and data[y][x] == ".":
             y += 1
          if y >= height:
-            #print("done")
-            return timelines + 1
-         #print(x, y, data[y][x])
+            return 1
          if data[y][x] == "^":
-            #print("Split")
-            timelines = dropbeam((x - 1, y), timelines)
-            timelines = dropbeam((x + 1, y), timelines)
-         if timelines % 100_000 == 0:
-            print("return", timelines)
+            t = dropbeam((x - 1, y), mm)
+            timelines += t
+            mm[(x - 1, y)] = t
+            t = dropbeam((x + 1, y), mm)
+            timelines += t
+            mm[(x + 1, y)] = t
          return timelines
 
-      answer = dropbeam(beam, 0)
-
+      answer = dropbeam(beam, mem)
       self.ShowAnswer(answer)
 
 
