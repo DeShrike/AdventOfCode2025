@@ -1,4 +1,5 @@
 from aoc import Aoc
+from functools import cache
 import itertools
 import math
 import re
@@ -18,12 +19,44 @@ class Device():
          oo += o.name + " "
       return f"{self.name}: {oo}"
 
-   def PathsTo(self, out: str) -> int:
-      if self.name == "out":
+   def CountPathsTo(self, out: str) -> int:
+      if self.name == out:
          return 1
       c = 0
       for o in self.outputs:
-         c += o.PathsTo(out)
+         c += o.CountPathsTo(out)
+      return c
+
+   def GetPathsToXXX(self, out: str, level: int, seenfft: bool, seendac: bool):
+      if self.name == out and seendac and seenfft:
+         print("ok")
+         return [[self.name]]
+      if self.name == out:
+         return None
+      allpaths = []
+      if self.name == "dac":
+         seendac = True
+      if self.name == "fft":
+         seenfft = True
+      for o in self.outputs:
+         paths = o.GetPathsTo(out, level + 1, seenfft, seendac)
+         if paths is not None:
+            for p in paths:
+               p.append(self.name)
+               allpaths.append(p)
+      return allpaths
+
+   @cache
+   def GetPathsTo(self, out: str, seenfft: bool, seendac: bool) -> int:
+      if self.name == out and seendac and seenfft:
+         return 1
+      if self.name == "dac":
+         seendac = True
+      if self.name == "fft":
+         seenfft = True
+      c = 0
+      for o in self.outputs:
+         c += o.GetPathsTo(out, seenfft, seendac)
       return c
 
 class Day11Solution(Aoc):
@@ -65,21 +98,26 @@ class Day11Solution(Aoc):
 
    def TestDataB(self):
       self.inputdata.clear()
-      # self.TestDataA()    # If test data is same as test data for part A
       testdata = \
       """
-      1000
-      2000
-      3000
+      svr: aaa bbb
+      aaa: fft
+      fft: ccc
+      bbb: tty
+      tty: ccc
+      ccc: ddd eee
+      ddd: hub
+      hub: fff
+      eee: dac
+      dac: fff
+      fff: ggg hhh
+      ggg: out
+      hhh: out
       """
       self.inputdata = [line.strip() for line in testdata.strip().split("\n")]
-      return None
+      return 2
 
    def ParseInput(self):
-      # rx = re.compile("^(?P<from>[A-Z0-9]{3}) = \((?P<left>[A-Z0-9]{3}), (?P<right>[A-Z0-9]{3})\)$")
-      # match = rx.search(line)
-      # pos = match["from"]
-
       data = []
       for line in self.inputdata:
          data.append(line)
@@ -89,7 +127,6 @@ class Day11Solution(Aoc):
    def CreateDevices(self, data):
       devices = {}
       for ix, line in enumerate(data):
-         print(ix)
          parts = line.split(":")
          name = parts[0]
          if name not in devices:
@@ -105,18 +142,12 @@ class Day11Solution(Aoc):
       self.StartPartA()
 
       data = self.ParseInput()
-
       devices = self.CreateDevices(data)
-      for device in devices.items():
-         print(device)
-      # Add solution here
 
       answer = 0
       for k, device in devices.items():
-         print(device)
          if device.name == "you":
-            answer += device.PathsTo("out")
-
+            answer += device.CountPathsTo("out")
 
       self.ShowAnswer(answer)
 
@@ -124,9 +155,13 @@ class Day11Solution(Aoc):
       self.StartPartB()
 
       data = self.ParseInput()
-      answer = None
+      devices = self.CreateDevices(data)
 
-      # Add solution here
+      answer = 0
+
+      for k, device in devices.items():
+         if device.name == "svr":
+            answer += device.GetPathsTo("out", False, False)
 
       self.ShowAnswer(answer)
 
