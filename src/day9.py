@@ -24,11 +24,13 @@ class Day9Solution(Aoc):
    def Run(self):
       self.StartDay(9, "Movie Theater")
       self.ReadInput()
+      self.spacing = 1
       self.PartA()
       self.PartB()
 
    def Test(self):
       self.StartDay(9)
+      self.spacing = 10
 
       goal = self.TestDataA()
       self.PartA()
@@ -123,7 +125,7 @@ class Day9Solution(Aoc):
       width = len(grid[0])
       height = len(grid)
       x = width // 2
-      y = height // 4
+      y = height // 3
       grid[y][x] = 3
       print("floodfilling")
       q = [(x, y)]
@@ -162,15 +164,15 @@ class Day9Solution(Aoc):
 
       ny = 1
       for y in ys:
-         ny += 1
+         ny += self.spacing
          for p in points:
-            if p.y == y:
+            if p.oy == y:
                p.y = ny
       nx = 1
       for x in xs:
-         nx += 1
+         nx += self.spacing
          for p in points:
-            if p.x == x:
+            if p.ox == x:
                p.x = nx
 
       minx = miny = 1_000_000_000
