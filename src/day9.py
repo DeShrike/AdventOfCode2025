@@ -1,6 +1,6 @@
 from aoc import Aoc
 from canvas import Canvas
-from utilities import neighbours8
+from utilities import dirange, neighbours8
 import itertools
 import math
 import re
@@ -67,8 +67,11 @@ class Day9Solution(Aoc):
          data.append(line)
       return data
 
-   def CalcArea(self, p1, p2):
+   def CalcArea(self, p1, p2) -> int:
       return (abs(p1[0] - p2[0]) + 1) * (abs(p1[1] - p2[1]) + 1)
+
+   def CalcExpandedArea(self, p1: Point, p2: Point) -> int:
+      return (abs(p1.ox - p2.ox) + 1) * (abs(p1.oy - p2.oy) + 1)
 
    def PartA(self):
       self.StartPartA()
@@ -116,6 +119,8 @@ class Day9Solution(Aoc):
                canvas.set_big_pixel(x * boxsize, y * boxsize, (0,255,0), boxsize)
             elif col == 3:
                canvas.set_big_pixel(x * boxsize, y * boxsize, (0,0,255), boxsize)
+            elif col == 4:
+               canvas.set_big_pixel(x * boxsize, y * boxsize, (255,255,0), boxsize)
 
       pngname = "day9b.png"
       print(f"Saving {pngname}")
@@ -127,7 +132,7 @@ class Day9Solution(Aoc):
       x = width // 2
       y = height // 3
       grid[y][x] = 3
-      print("floodfilling")
+      #print("floodfilling")
       q = [(x, y)]
       while len(q) > 0:
          p = q.pop()
@@ -136,7 +141,41 @@ class Day9Solution(Aoc):
             if grid[n[1]][n[0]] == 0:
                grid[n[1]][n[0]] = 3
                q.append((n[0], n[1]))
-      print("done")
+      #print("done")
+
+   def IsAreaInside(self, p1: Point, p2: Point, grid) -> bool:
+      # print(f"Trying {p1} -> {p2}")
+      y1 = p1.y
+      y2 = p2.y
+      if y1 > y2:
+         y1, y2 = y2, y1
+
+      x1 = p1.x
+      x2 = p2.x
+      if x1 > x2:
+         x1, x2 = x2, x1
+
+      for y in dirange(y1, y2):
+         for x in dirange(x1, x2):
+            if grid[y][x] == 0:
+               return False
+      return True
+
+   def FillAreaInside(self, p1: Point, p2: Point, grid) -> None:
+      # print(f"Trying {p1} -> {p2}")
+      y1 = p1.y
+      y2 = p2.y
+      if y1 > y2:
+         y1, y2 = y2, y1
+
+      x1 = p1.x
+      x2 = p2.x
+      if x1 > x2:
+         x1, x2 = x2, x1
+
+      for y in dirange(y1, y2):
+         for x in dirange(x1, x2):
+            grid[y][x] = 4
 
    def PartB(self):
       self.StartPartB()
@@ -154,8 +193,8 @@ class Day9Solution(Aoc):
          maxx = max(maxx, point.x)
          maxy = max(maxy, point.y)
 
-      print(f"Extent X: {minx} -> {maxx}")
-      print(f"Extent Y: {miny} -> {maxy}")
+      #print(f"Extent X: {minx} -> {maxx}")
+      #print(f"Extent Y: {miny} -> {maxy}")
 
       xs = list(set([p.x for p in points]))
       xs.sort()
@@ -183,8 +222,8 @@ class Day9Solution(Aoc):
          maxx = max(maxx, point.x)
          maxy = max(maxy, point.y)
 
-      print(f"Extent X: {minx} -> {maxx}")
-      print(f"Extent Y: {miny} -> {maxy}")
+      #print(f"Extent X: {minx} -> {maxx}")
+      #print(f"Extent Y: {miny} -> {maxy}")
 
       grid = [[0 for x in range(maxx + 5)] for y in range(maxy + 5)]
 
@@ -213,11 +252,28 @@ class Day9Solution(Aoc):
 
       self.Floodfill(grid)
 
+      answer = 0
+      bestp1 = None
+      bestp2 = None
+      for a, p1 in enumerate(points):
+         for b, p2 in enumerate(points):
+            if a >= b:
+               continue
+            if self.IsAreaInside(p1, p2, grid):
+               area = self.CalcExpandedArea(p1, p2)
+               if area > answer:
+                  answer = area
+                  bestp1 = p1
+                  bestp2 = p2
+
+      self.FillAreaInside(bestp1, bestp2, grid)
+
       self.GridToPng(grid)
-      
+
       # Attempt 1: 4750092396 is too high
       # Attempt 2: 2679903198 is too high
       # Attempt 3: 1363080015 is too low
+      # Attempt 4: 1468516555 is correct
 
       self.ShowAnswer(answer)
 
