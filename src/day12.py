@@ -26,10 +26,12 @@ class Shape():
       self.id = int(lines[0].split(":")[0])
       self.w = len(lines[1])
       self.h = len(lines) - 1
+      self.activecount = 0
       self.grid = [ [0 for _ in range(self.w)] for _ in range(self.h) ]
       for y, l in enumerate(lines[1:]):
          for x, c in enumerate(l):
             if c == "#":
+               self.activecount += 1
                self.grid[y][x] = 1
 
    def __repr__(self) -> str:
@@ -133,14 +135,23 @@ class Day12Solution(Aoc):
          regions.append(Region(line))
       return shapes, regions
 
+   def TryRegion(self, region: Region, shapes) -> bool:
+      available = region.width * region.height
+      needed = 0
+      for ix, n in enumerate(region.needed):
+         needed += shapes[ix].activecount * n
+      return needed <= available
+
    def PartA(self):
       self.StartPartA()
 
       data = self.ParseInput()
       shapes, regions = self.ParseData(data)
-      answer = None
+      answer = 0
 
-      # Add solution here
+      for region in regions:
+         if self.TryRegion(region, shapes):
+            answer += 1
 
       self.ShowAnswer(answer)
 
