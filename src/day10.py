@@ -21,19 +21,22 @@ class Machine():
       self.lights = 0
       self.joltage = [int(x) for x in j.split(",")]
       self.buttons = []
-      for b in b.split(" "):
-         d = b[1:-1].split(",")
+      self.fullbuttons = []
+      
+      for bb in b.split(" "):
+         self.fullbuttons.append([int(n) for n in bb[1:-1].split(",")])
+         d = bb[1:-1].split(",")
          l = 0
          for ll in d:
             l |= (1 << int(ll))
          self.buttons.append(l)
 
+   """
    def ToggleBitXX(self, num: int, bit: int) -> int:
-      #print(f"toggle {bit} in {num}")
       return num ^ (1 << (bit - 1))
+   """
 
    def ToggleBit(self, num: int, bits: int) -> int:
-      #print(f"toggle {bits} in {num}")
       return num ^ bits
 
    def GetBits(self, val):
@@ -42,86 +45,58 @@ class Machine():
             yield i
 
    def SolveLights(self) -> int:
-      #for b in self.GetBits(3):
-      #   print (b)
-      #aa = input()
-   
       m = (1 << len(self.buttons)) - 1
       mi = 1000;
-      #print("range: ", 0, m)
       for n in range(m):
          val = 0
          c = 0
-         #print(f"num {n}: ", end="")
          for nn in self.GetBits(n):
-            #print(f" buttons[{nn}] = {self.buttons[nn]}", end="")
             val = self.ToggleBit(val, self.buttons[nn])
             c += 1
-         #print(f"X {val} == {self.indi} ??")
-         #print(n, val, bin(val), self.indis, bin(self.indi))
-         #aa =  input()
          if val == self.indi:
-            #print("OK", nn, m, len(self.buttons), len(self.indis))
             mi = min(mi, c)
-      #print(mi)
-      #aa = input()
       return mi
 
-   def solve_linear_combination(self, coeffs, target):
-       """
-       Solve c1*x1 + c2*x2 + ... + cn*xn = target
-       for non-negative integers x1, x2, ..., xn.
+   def SolveB(self):
+      buttoncount = len(self.fullbuttons)
+      joltagecount = len(self.joltage)
+      mat = [[0 for _ in range(buttoncount+1)] for _ in range(joltagecount)]
+      for ix, j in enumerate(self.joltage):
+         mat[ix][-1] = j
+      for bix, b in enumerate(self.fullbuttons):
+         for n in b:
+            mat[n][bix] += 1
+      print(" ")
+      print(" ")
+      for m in mat:
+         print(m, len([True for t in m if t == 1]))
 
-       coeffs: list of integers (coefficients)
-       target: integer target sum
-       """
-       print("solving")
-       solutions = []
-       n = len(coeffs)
-       xs = [0] * n  # placeholder for current solution
+   """
+(3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}
 
-       def backtrack(i, remaining):
-           print(i, remaining)
-           # If we've assigned all variables:
-           if i == n:
-               if remaining == 0:
-                   solutions.append(tuple(xs))
-               return
-           
-           c = coeffs[i]
+0 * A + 0 * B + 0 * C + 0 * D + 1 * E + 1 * F = 3
+0 * A + 1 * B + 0 * C + 0 * D + 0 * E + 1 * F = 5
+0 * A + 0 * B + 1 * C + 1 * D + 1 * E + 0 * F = 4
+1 * A + 1 * B + 0 * C + 1 * D + 0 * E + 0 * F = 7
 
-           # Maximum possible value for xi given the remaining amount
-           max_x = remaining // c  
+A = 1
+B = 3
+D = 3
+C = 0
+E = 1
+F = 2
 
-           for v in range(max_x + 1):
-               xs[i] = v
-               backtrack(i + 1, remaining - v * c)
+1 * 1 + 1 * 2 = 3
+1 * 3 + 1 * 2 = 5
+1 * 3 + 1 * 1 = 4
+1 * 1 + 1 * 3 + 1 * 3 = 7
 
-       backtrack(0, target)
-       return solutions
 
-   def Dummy(self):
-      coeffs = [1000, 1010, 100, 1100, 101, 11]
-      target = 3547
+   """
 
-      """
-      0,0,0,0
-      0,0,0,1  (3)
-      0,3,0,4  (1,3)*3
-      0,3,3,7  (2,3)*3
-      1,3,4,7  (0,2)
-      3,5,4,7  (0,1)
 
-      A * 1000 + B * 1010 + C * 100 + D * 1100 + E * 101 + F * 11 = 3547
-      """
 
-      solutions = solve_linear_combination(coeffs, target)
-
-      for sol in solutions:
-          print(sol)
-
-      print("\nTotal solutions:", len(solutions))
-
+   """
    def SolveB(self):
       coeffs = []
       target = 0
@@ -148,6 +123,7 @@ class Machine():
       print("\nTotal solutions:", len(solutions))
 
       a = input()
+   """
 
 class Day10Solution(Aoc):
 
@@ -209,9 +185,9 @@ class Day10Solution(Aoc):
       answer = None
 
       machines = [Machine(line) for line in data]
-      machines[0].SolveB()
-      # Add solution here
-
+      for m in machines:
+         m.SolveB()
+         aa= input()
       self.ShowAnswer(answer)
 
 
